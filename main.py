@@ -23,16 +23,19 @@ missing_values = data.isnull().sum()
 #OUTLIERS
 # code for showcasing outliers in the data
 # Get the columns with numeric data
-'''
-test_coloumns=data[['Year_Birth','Income','MntMeatProducts']]
+
+#test_coloumns=data[['Year_Birth','Income','MntMeatProducts']]
+numeric_columns_var= data.select_dtypes(include='number')
 # Iterate over each numeric column and create box plots
-for column in test_coloumns:
+'''
+for column in numeric_columns_var:
     plt.figure(figsize=(8, 6))
     plt.boxplot(data[column].dropna())
     plt.title(f"Outliers - {column}")
     plt.xticks([1], [column])
     plt.show()
-''' #uncomment later    
+ #uncomment later 
+ '''   
     
 #CLASS IMBALANCES
 # Iterate over each column and create bar plots for class imbalance
@@ -49,6 +52,18 @@ for column in test_coloumns_1:
 '''    
     
 #HANDLINE MISSING VALUES AND OUTLIERS 
+
+# We only handle the income coloumn since it is the only one with missing values
+data['Income'].fillna(data['Income'].mean(numeric_only=True).round(1),inplace=True)
+
+# We only handle the outliers using quartile bonding [Don't know which coloumns to choose, think about it] # WHY DO WE USE QUARTILE BOUNDING ?
+for column in numeric_columns_var:
+    Q1 = data[column].quantile(0.25)
+    Q3 = data[column].quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - (1.5 * IQR)
+    upper_bound = Q3 + (1.5 * IQR)
+    data = data[(data[column] >= lower_bound) & (data[column] <= upper_bound)]
 
 
 
@@ -67,12 +82,13 @@ plt.tight_layout()
 plt.show() 
 
 #2ND PLOT
-'''
+
 # Select the categorical columns
 categorical_columns = ['Education', 'Marital_Status', 'Complain', 'AcceptedCmp1', 'AcceptedCmp2',
                        'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5', 'Response']
 
 # Plot the bar plot for each categorical column
+
 for column in categorical_columns:
     plt.figure(figsize=(8, 6))
     sns.countplot(x=column, data=data)
@@ -81,7 +97,7 @@ for column in categorical_columns:
     plt.ylabel("Count")
     plt.xticks(rotation=90)
     plt.show()
-'''    
+  
 
 
 #3RD PLOT   
@@ -96,6 +112,7 @@ plt.title("Box Plot of Selected Columns")
 plt.xlabel("Columns")
 plt.xticks(rotation=90)
 plt.show()
+
 
 
     
