@@ -489,6 +489,11 @@ accuracy = ensemble_model.score(X_test, y_test)
 print("Accuracy:", accuracy)
 
 
+############################# QUESTION 6 ################################
+
+
+
+
 
 
 
