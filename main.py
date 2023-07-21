@@ -23,7 +23,14 @@ import shap
 import lime
 import lime.lime_tabular
 from sklearn.metrics import confusion_matrix
-import seaborn as sns
+from xgboost import XGBClassifier
+from sklearn.model_selection import RandomizedSearchCV
+from scipy.stats import randint as sp_randint
+from scipy.stats import uniform as sp_uniform
+from sklearn.ensemble import GradientBoostingRegressor
+from yellowbrick.model_selection import FeatureImportances
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.inspection import PartialDependenceDisplay
 
 # Specify the file path
 file_path = "Dataset.csv"
@@ -268,7 +275,7 @@ print(f'Testing set shape: {X_test.shape}, {y_test.shape}')
 #1. LOGISTIC REGRESSION
 
 # create a new instance of the logistic regression model
-logreg = LogisticRegression(max_iter=100)
+logreg = LogisticRegression(max_iter=200,solver='sag')
 
 # fit the logistic regression model to the training data
 logreg.fit(X_train, y_train)
@@ -424,13 +431,13 @@ y_pred_SVM = svm.predict(X_test)
 # plt.show()
 
 
-############################# QUESTION 5 ################################
+# ############################# QUESTION 5-1 ################################
 
 #Q5(a)
-# create a Gradient Boosting classifier with 100 trees
-gbc_hyper = GradientBoostingClassifier(n_estimators=500,
-                                 learning_rate=0.01,
-                                 max_depth=5,
+# create a Gradient Boosting classifier 
+gbc_hyper = GradientBoostingClassifier(n_estimators=50,
+                                 learning_rate=0.1,
+                                 max_depth=3,
                                  subsample=1.0,
                                  min_samples_split=2,
                                  min_samples_leaf=1,
@@ -445,48 +452,48 @@ y_pred_gb = gbc_hyper.predict(X_test)
 # Accuracy score
 print("Accuracy  after tuning the hyperparameters:", accuracy_score(y_test, y_pred_gb))
 
-#Q5(b)
-# define the parameter grid to search over
-param_grid = {
-    'n_estimators': [50, 100, 150],
-    'learning_rate': [0.1, 0.01, 0.001],
-    'max_depth': [3, 5, 7],
-    'subsample': [0.5, 0.75, 1.0],
-    'min_samples_split': [2, 5, 10],
-    'min_samples_leaf': [1, 2, 4]
+
+# #Q5(b)
+
+
+# define the hyperparameter space
+param_dist = {
+    'n_estimators': sp_randint(200, 300),
+    'learning_rate': sp_uniform(0.001, 0.01),
+    'max_depth': sp_randint(3, 4),
+    'subsample': sp_uniform(0.75, 0.9),
+    'min_samples_split': sp_randint(2, 3),
+    'min_samples_leaf': sp_randint(1, 2)
 }
 
 # create a Gradient Boosting classifier
-#gbc = GradientBoostingClassifier(random_state=42)
+gbc = GradientBoostingClassifier(random_state=42)
 
-# create a k-fold cross-validation object
-cv = KFold(n_splits=5, shuffle=True, random_state=42)
+# create a RandomizedSearchCV object to search over the parameter space
+random_search = RandomizedSearchCV(
+    estimator=gbc,
+    param_distributions=param_dist,
+    n_iter=100,
+    cv=5,
+    random_state=42,
+    n_jobs=-1,
+    scoring='accuracy')
 
-# create a GridSearchCV object to search over the parameter grid
-grid_search = GridSearchCV(estimator=gbc_hyper, param_grid=param_grid, cv=cv, scoring='accuracy')
-
-# fit the GridSearchCV object to the training data
-grid_search.fit(X_train, y_train)
+# fit the RandomizedSearchCV object to the training data
+random_search.fit(X_train, y_train)
 
 # print the best hyperparameters and best score
-print("Best hyperparameters:", grid_search.best_params_)
-print("Best score:", grid_search.best_score_)
+print("Best hyperparameters:", random_search.best_params_)
+print("Best score:", random_search.best_score_)
 
-# assign the best parameters to the estimator
-gbc_hyper.set_params(**grid_search.best_params_)
+# asssigning the best parameters to the gbc model
+gbc = GradientBoostingClassifier(random_state=42).set_params(**random_search.best_params_)
 
-#Q5(c)
-# Step 2. Create a Base model
-# base_model = GradientBoostingClassifier(n_estimators=500,
-#                                  learning_rate=0.01,
-#                                  max_depth=5,
-#                                  subsample=1.0,
-#                                  min_samples_split=2,
-#                                  min_samples_leaf=1,
-#                                  random_state=42)
+
+# Q5(c)
 
 # Step 3. Add ensembling methods on top of Base model
-ensemble_model = BaggingClassifier(estimator=gbc_hyper, n_estimators=5, random_state=42)
+ensemble_model = BaggingClassifier(estimator=GradientBoostingClassifier(), n_estimators=5, random_state=42)
 ## it can't process this on my PC and change the n_estimators with more parameters
 
 # Step 4. Fit the ensemble model to the training data
@@ -494,37 +501,63 @@ ensemble_model.fit(X_train, y_train)
 
 # Step 5. Evaluate the performance of the ensemble model on the test data
 accuracy = ensemble_model.score(X_test, y_test)
-print("Accuracy:", accuracy)
+print("Accuracy for Bagging:", accuracy)
 
 
 
 ############################# QUESTION 6 ################################
 
-# create shap explainer and shap values
-shap_explainer = shap.TreeExplainer(ensemble_model)
-shap_values = shap_explainer.shap_values(X_test)
 
-# create shap summary plot
-shap.summary_plot(shap_values, X_test)
+# # create a GradientBoostingRegressor object with the same hyperparameters as the GradientBoostingClassifier
+# gbr = GradientBoostingRegressor(
+#     loss='squared_error',
+#     learning_rate=gbc.learning_rate,
+#     n_estimators=gbc.n_estimators,
+#     subsample=gbc.subsample,
+#     criterion=gbc.criterion,
+#     min_samples_split=gbc.min_samples_split,
+#     min_samples_leaf=gbc.min_samples_leaf,
+#     max_depth=gbc.max_depth,
+#     random_state=42
+# )
+
+# # fit the GradientBoostingRegressor to the training data
+# gbr.fit(X_train, y_train)
+
+# # create a TreeExplainer for the GradientBoostingRegressor
+# shap_explainer = shap.TreeExplainer(gbr)
+
+# # generate SHAP values for the GradientBoostingClassifier
+# shap_values = shap_explainer.shap_values(X_test)
+
+# # create a SHAP summary plot
+# shap.summary_plot(shap_values, X_test,plot_type='dot')
 
 
-# create lime explainer and lime explanation
-lime_explainer = lime.lime_tabular.LimeTabularExplainer(X_train.values, feature_names=X_train.columns, class_names=['0', '1'])
-lime_explanation = lime_explainer.explain_instance(X_test.iloc[0], ensemble_model.predict_proba)
+# # Creating the feature importances plot
+# visualizer = FeatureImportances(gbc,relative=True)
 
-# create lime explanation plot
-lime_explanation.as_pyplot_figure()
+# visualizer.fit(X_train, y_train)
+# # Saving plot in PNG format
+# visualizer.show(outpath="Feature_Importances_Plot.png")
+
+
+# define the features to include in the partial dependence plot
+features = ['Income', 'Marital_Status', ('Income', 'Marital_Status')]
+
+# create a PartialDependenceDisplay object for the gbc model
+pdp_display = PartialDependenceDisplay.from_estimator(gbc, X_train, features,target=y_train)
+
+# show the plot
+pdp_display.plot()
 
 
 
-# predict the class labels for the test set
-y_pred = ensemble_model.predict(X_test)
 
-# create the confusion matrix
-cm = confusion_matrix(y_test, y_pred)
 
-# plot the confusion matrix using seaborn
-sns.heatmap(cm, annot=True, cmap='Blues')
+
+
+
 
 
 
