@@ -19,6 +19,11 @@ from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import GridSearchCV, KFold
 from sklearn.ensemble import BaggingClassifier
+import shap
+import lime
+import lime.lime_tabular
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 
 # Specify the file path
 file_path = "Dataset.csv"
@@ -451,34 +456,37 @@ param_grid = {
     'min_samples_leaf': [1, 2, 4]
 }
 
-# # create a Gradient Boosting classifier
-# gbc = GradientBoostingClassifier(random_state=42)
+# create a Gradient Boosting classifier
+#gbc = GradientBoostingClassifier(random_state=42)
 
-# # create a k-fold cross-validation object
-# cv = KFold(n_splits=5, shuffle=True, random_state=42)
+# create a k-fold cross-validation object
+cv = KFold(n_splits=5, shuffle=True, random_state=42)
 
-# # create a GridSearchCV object to search over the parameter grid
-# grid_search = GridSearchCV(estimator=gbc, param_grid=param_grid, cv=cv, scoring='accuracy')
+# create a GridSearchCV object to search over the parameter grid
+grid_search = GridSearchCV(estimator=gbc_hyper, param_grid=param_grid, cv=cv, scoring='accuracy')
 
-# # fit the GridSearchCV object to the training data
-# grid_search.fit(X_train, y_train)
+# fit the GridSearchCV object to the training data
+grid_search.fit(X_train, y_train)
 
-# # print the best hyperparameters and best score
-# print("Best hyperparameters:", grid_search.best_params_)
-# print("Best score:", grid_search.best_score_)
+# print the best hyperparameters and best score
+print("Best hyperparameters:", grid_search.best_params_)
+print("Best score:", grid_search.best_score_)
+
+# assign the best parameters to the estimator
+gbc_hyper.set_params(**grid_search.best_params_)
 
 #Q5(c)
 # Step 2. Create a Base model
-base_model = GradientBoostingClassifier(n_estimators=500,
-                                 learning_rate=0.01,
-                                 max_depth=5,
-                                 subsample=1.0,
-                                 min_samples_split=2,
-                                 min_samples_leaf=1,
-                                 random_state=42)
+# base_model = GradientBoostingClassifier(n_estimators=500,
+#                                  learning_rate=0.01,
+#                                  max_depth=5,
+#                                  subsample=1.0,
+#                                  min_samples_split=2,
+#                                  min_samples_leaf=1,
+#                                  random_state=42)
 
 # Step 3. Add ensembling methods on top of Base model
-ensemble_model = BaggingClassifier(estimator=base_model, n_estimators=5, random_state=42)
+ensemble_model = BaggingClassifier(estimator=gbc_hyper, n_estimators=5, random_state=42)
 ## it can't process this on my PC and change the n_estimators with more parameters
 
 # Step 4. Fit the ensemble model to the training data
@@ -487,6 +495,37 @@ ensemble_model.fit(X_train, y_train)
 # Step 5. Evaluate the performance of the ensemble model on the test data
 accuracy = ensemble_model.score(X_test, y_test)
 print("Accuracy:", accuracy)
+
+
+
+############################# QUESTION 6 ################################
+
+# create shap explainer and shap values
+shap_explainer = shap.TreeExplainer(ensemble_model)
+shap_values = shap_explainer.shap_values(X_test)
+
+# create shap summary plot
+shap.summary_plot(shap_values, X_test)
+
+
+# create lime explainer and lime explanation
+lime_explainer = lime.lime_tabular.LimeTabularExplainer(X_train.values, feature_names=X_train.columns, class_names=['0', '1'])
+lime_explanation = lime_explainer.explain_instance(X_test.iloc[0], ensemble_model.predict_proba)
+
+# create lime explanation plot
+lime_explanation.as_pyplot_figure()
+
+
+
+# predict the class labels for the test set
+y_pred = ensemble_model.predict(X_test)
+
+# create the confusion matrix
+cm = confusion_matrix(y_test, y_pred)
+
+# plot the confusion matrix using seaborn
+sns.heatmap(cm, annot=True, cmap='Blues')
+
 
 
 
