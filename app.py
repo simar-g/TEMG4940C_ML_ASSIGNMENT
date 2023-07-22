@@ -10,6 +10,7 @@ import plotly.graph_objs as go
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 import joblib
+from sklearn.metrics import precision_recall_curve
 import numpy as np
 import plotly.io as pio
 import base64
@@ -89,6 +90,30 @@ def get_confusion_matrix(model, X_test, y_test):
 
     return confusion_matrix_graph
 
+
+def get_precision_recall_curve(model, X_test, y_test):
+    # Get the predicted probabilities from the model
+    y_pred_proba = model.predict_proba(X_test)
+    # Assume y_test is a 1D array of true class labels
+    precision, recall, thresholds = precision_recall_curve(y_test, y_pred_proba[:, 1])
+
+    # Create a Plotly graph object for the precision-recall curve
+    precision_recall_graph = {
+        'data': [go.Scatter(
+            x=recall,
+            y=precision,
+            mode='lines',
+            line=dict(color='blue')
+        )],
+        'layout': go.Layout(
+            title='Precision-Recall Curve',
+            xaxis=dict(title='Recall'),
+            yaxis=dict(title='Precision')
+        )
+    }
+
+    return precision_recall_graph
+
 #get the pre-processed data from main.py
 data = get_preprocessed_data(file_path)
 
@@ -106,6 +131,9 @@ svm = joblib.load('model4.pkl')
 
 # load the feature importances plot as a Yellowbrick visualizer object
 visualizer = joblib.load('visualizer.pkl')
+
+#load the latest gbc tuned model
+gbc_tuned=joblib.load('model_gbc.pkl')
 
 # Define the layout of the dashboard
 app = Dash(__name__)
@@ -161,8 +189,8 @@ app.layout = html.Div(children=[
         ROC Curve:
     '''),
      html.Img(
-        id='SHAP Summary Plot',
-        src='data:image/png;base64,{}'.format(base64.b64encode(open("ROC.png", 'rb').read()).decode())
+        id='ROC Plot',
+        src='data:image/png;base64,{}'.format(base64.b64encode(open("roc.png", 'rb').read()).decode())
     ),
     
      
@@ -181,9 +209,41 @@ app.layout = html.Div(children=[
      html.Img(
         id='SHAP Summary Plot',
         src='data:image/png;base64,{}'.format(base64.b64encode(open("Shap.png", 'rb').read()).decode())
+    ),
+     
+       html.Div(children='''
+        Residual Plot
+    '''),
+     html.Img(
+        id='Residual Plot',
+        src='data:image/png;base64,{}'.format(base64.b64encode(open("Shap.png", 'rb').read()).decode())
+    ),
+     
+     html.Div(children='''
+        Precision-Recall Curve for Gradient Boosting Classifier:
+    '''),
+
+    dcc.Graph(
+        id='precision-recall-graph'
     )
     
 ])
+
+
+#Define the callback function to get the precision recall graph
+@app.callback(
+    Output('precision-recall-graph', 'figure')
+)
+def update_precision_recall_graph():
+    # Get the gbc model object
+    model = gbc_tuned
+
+    # Generate the precision-recall curve for gbc
+    precision_recall_graph = get_precision_recall_curve(model, X_test, y_test)
+
+    # Return the precision-recall graph as a Plotly figure
+    return precision_recall_graph
+
 
 # Define a callback function to update the confusion matrix based on user input
 @app.callback(
