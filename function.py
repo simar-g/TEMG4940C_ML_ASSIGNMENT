@@ -116,7 +116,7 @@ def get_preprocessed_data(file_path):
 
     ## Attribute: Z_CostContact and Z_revenue ##
     # drop the Z_CostContact and Z_Revenue columns from the dataframe
-    #data= data.drop(columns=['Z_CostContact', 'Z_Revenue'])
+    data= data.drop(columns=['Z_CostContact', 'Z_Revenue'])
 
 
     ####### Attribute: ID ####### 
@@ -131,6 +131,8 @@ def get_preprocessed_data(file_path):
     data['Month'] = data['Dt_Customer'].dt.month
     data['Day'] = data['Dt_Customer'].dt.day
     data['DayOfWeek'] = data['Dt_Customer'].dt.dayofweek
+    
+    data= data.drop(columns=['AcceptedCmp1', 'AcceptedCmp2','AcceptedCmp3','AcceptedCmp4','AcceptedCmp5','Response'])
 
     data = data.drop('Dt_Customer', axis=1)
 

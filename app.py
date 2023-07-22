@@ -23,6 +23,9 @@ file_path = "Dataset.csv"
 # Load the CSV file with tab delimiter and headers
 data = pd.read_csv(file_path, delimiter="\t", header=0)
 
+Y = data['AcceptedCmp1'] + data['AcceptedCmp2'] + data['AcceptedCmp3'] + data['AcceptedCmp4'] + data['AcceptedCmp5'] + data['Response']
+
+
 # Select the numeric columns
 numeric_columns = ['Year_Birth', 'Income', 'Kidhome', 'Teenhome', 'Recency', 'MntWines', 'MntFruits',
                    'MntMeatProducts', 'MntFishProducts', 'MntSweetProducts', 'MntGoldProds',
@@ -117,8 +120,7 @@ def get_precision_recall_curve(model, X_test, y_test):
 #get the pre-processed data from main.py
 data = get_preprocessed_data(file_path)
 
-Y = data['AcceptedCmp1'] + data['AcceptedCmp2'] + data['AcceptedCmp3'] + data['AcceptedCmp4'] + data['AcceptedCmp5'] + data['Response']
-
+Y = Y[Y.index.isin(data.index)]
 #Split data
 X_train, X_test, y_train, y_test = train_test_split(data, Y, test_size=0.3, random_state=42)
 
@@ -134,6 +136,16 @@ visualizer = joblib.load('visualizer.pkl')
 
 #load the latest gbc tuned model
 gbc_tuned=joblib.load('model_gbc.pkl')
+
+
+# Define the layout for the confusion matrix graph
+confusion_matrix_layout = html.Div([
+    dcc.Graph(
+        id='confusion-matrix-graph',
+        figure=get_confusion_matrix(rfc, X_test, y_test),
+        style={'height': '400px'}
+    )
+])
 
 # Define the layout of the dashboard
 app = Dash(__name__)
@@ -174,23 +186,31 @@ app.layout = html.Div(children=[
         figure=fig3
     ),
     
-    html.Div([
-        html.Label('Select a model:'),
-        dcc.Dropdown(
-            id='model-dropdown',
-            options=[{'label': i, 'value': i} for i in ['Logistic Regression', 'Random Forest', 'SVM', 'Gradient Boosting Classifier']],
-            value='Logistic Regression'
-        )
-    ]),
 
-    html.Div(id='confusion-matrix'),
+        html.Label('Select a model:'),
+    dcc.Dropdown(
+        id='model-dropdown',
+        options=[
+            {'label': 'Random Forest', 'value': 'Random Forest'},
+            {'label': 'Logistic Regression', 'value': 'Logistic Regression'},
+            {'label': 'SVM', 'value': 'SVM'},
+            {'label': 'Gradient Boosting Classifier', 'value': 'Gradient Boosting Classifier'}
+        ],
+        value='Random Forest'
+    ),
+    html.Div(id='confusion-matrix-container', children=[
+        confusion_matrix_layout
+    ]),
+    
+
+   
     
       html.Div(children='''
         ROC Curve:
     '''),
      html.Img(
         id='ROC Plot',
-        src='data:image/png;base64,{}'.format(base64.b64encode(open("roc.png", 'rb').read()).decode())
+        src='data:image/png;base64,{}'.format(base64.b64encode(open("ROC.png", 'rb').read()).decode())
     ),
     
      
@@ -215,7 +235,7 @@ app.layout = html.Div(children=[
         Precision-Recall Curve for Gradient Boosting Classifier:
     '''),
      html.Img(
-        id='Residual Plot',
+        id='Recall Plot',
         src='data:image/png;base64,{}'.format(base64.b64encode(open("PR_CURVE.png", 'rb').read()).decode())
     )
     
@@ -238,8 +258,9 @@ def update_precision_recall_graph():
 
 
 # Define a callback function to update the confusion matrix based on user input
+# Define a callback function to update the confusion matrix based on user input
 @app.callback(
-    Output('confusion-matrix', 'children'),
+    Output('confusion-matrix-graph', 'figure'),
     [Input('model-dropdown', 'value')]
 )
 def update_confusion_matrix(model_name):
@@ -251,17 +272,20 @@ def update_confusion_matrix(model_name):
     elif model_name == 'SVM':
         model = svm
     elif model_name == 'Gradient Boosting Classifier':
-        model = gbc
+        model = gbc_tuned
     else:
         raise ValueError('Invalid model name')
 
     # Generate the confusion matrix for the selected model
     confusion_matrix_graph = get_confusion_matrix(model, X_test, y_test)
+     # Create a Plotly figure for the confusion matrix
+    confusion_matrix_fig = go.Figure(data=go.Heatmap(z=confusion_matrix_graph,
+                                                     x=['0', '1'],
+                                                     y=['0', '1'],
+                                                     colorscale='Viridis'))
 
-    return dcc.Graph(
-        id='confusion-matrix-graph',
-        figure=confusion_matrix_graph
-    )
+    # Return the confusion matrix graph as a Plotly figure
+    return confusion_matrix_graph
 
 
 # Define a callback function to update the histogram figure based on user input

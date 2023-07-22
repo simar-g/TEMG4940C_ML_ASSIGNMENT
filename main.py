@@ -61,7 +61,7 @@ missing_values = data.isnull().sum()
 #test_coloumns=data[['Year_Birth','Income','MntMeatProducts']]
 numeric_columns_var= data.select_dtypes(include='number')
 # Iterate over each numeric column and create box plots
-'''
+
 for column in numeric_columns_var:
     plt.figure(figsize=(8, 6))
     plt.boxplot(data[column].dropna())
@@ -69,11 +69,11 @@ for column in numeric_columns_var:
     plt.xticks([1], [column])
     plt.show()
  #uncomment later 
- '''   
+
     
 #CLASS IMBALANCES
 # Iterate over each column and create bar plots for class imbalance
-'''
+
 test_coloumns_1=data[['Kidhome','AcceptedCmp3','NumDealsPurchases']]
 for column in test_coloumns_1:
     plt.figure(figsize=(6, 4))
@@ -83,7 +83,7 @@ for column in test_coloumns_1:
     plt.ylabel("Count")
     plt.xticks(rotation=90)
     plt.show()
-'''    
+   
     
 #HANDLINE MISSING VALUES AND OUTLIERS 
 
@@ -131,7 +131,7 @@ numeric_columns = ['Year_Birth', 'Income', 'Kidhome', 'Teenhome', 'Recency', 'Mn
                    'NumWebVisitsMonth']
 
 # Plot the histogram
-''' uncomment 
+
 
 data[numeric_columns].hist(figsize=(12, 10), bins=20)
 plt.tight_layout()
@@ -168,7 +168,7 @@ for var in vars_of_interest:
     plt.xlabel('Marital_Status')
     plt.ylabel('Average ' + var)
     plt.show()
-'''
+
     
   
 ############################# QUESTION 2 ################################
@@ -433,134 +433,134 @@ plt.show()
 
 # # ############################# QUESTION 5 ################################
 
-# #Q5(a)
-# # create a Gradient Boosting classifier 
-# gbc_hyper = GradientBoostingClassifier(n_estimators=50,
-#                                  learning_rate=0.1,
-#                                  max_depth=3,
-#                                  subsample=1.0,
-#                                  min_samples_split=2,
-#                                  min_samples_leaf=1,
-#                                  random_state=42)
+#Q5(a)
+# create a Gradient Boosting classifier 
+gbc_hyper = GradientBoostingClassifier(n_estimators=50,
+                                 learning_rate=0.1,
+                                 max_depth=3,
+                                 subsample=1.0,
+                                 min_samples_split=2,
+                                 min_samples_leaf=1,
+                                 random_state=42)
 
-# # train the classifier on the training data
-# gbc_hyper.fit(X_train, y_train)
+# train the classifier on the training data
+gbc_hyper.fit(X_train, y_train)
 
-# # make predictions on the testing data
-# y_pred_gb = gbc_hyper.predict(X_test)
+# make predictions on the testing data
+y_pred_gb = gbc_hyper.predict(X_test)
 
-# # Accuracy score
-# print("Accuracy  after tuning the hyperparameters:", accuracy_score(y_test, y_pred_gb))
-
-
-# # #Q5(b)
+# Accuracy score
+print("Accuracy  after tuning the hyperparameters:", accuracy_score(y_test, y_pred_gb))
 
 
-# # define the hyperparameter space
-# param_dist = {
-#     'n_estimators': sp_randint(200, 300),
-#     'learning_rate': sp_uniform(0.001, 0.01),
-#     'max_depth': sp_randint(3, 4),
-#     'subsample': sp_uniform(0.5, 0.75),
-#     'min_samples_split': sp_randint(2, 3),
-#     'min_samples_leaf': sp_randint(1, 2)
-# }
+# #Q5(b)
 
-# # create a Gradient Boosting classifier
-# gbc = GradientBoostingClassifier(random_state=42)
 
-# # create a RandomizedSearchCV object to search over the parameter space
-# random_search = RandomizedSearchCV(
-#     estimator=gbc,
-#     param_distributions=param_dist,
-#     n_iter=100,
-#     cv=5,
-#     random_state=42,
-#     n_jobs=-1,
-#     scoring='accuracy')
+# define the hyperparameter space
+param_dist = {
+    'n_estimators': sp_randint(200, 300),
+    'learning_rate': sp_uniform(0.001, 0.01),
+    'max_depth': sp_randint(3, 4),
+    'subsample': sp_uniform(0.5, 0.75),
+    'min_samples_split': sp_randint(2, 3),
+    'min_samples_leaf': sp_randint(1, 2)
+}
 
-# # fit the RandomizedSearchCV object to the training data
-# random_search.fit(X_train, y_train)
+# create a Gradient Boosting classifier
+gbc = GradientBoostingClassifier(random_state=42)
 
-# # print the best hyperparameters and best score
-# print("Best hyperparameters:", random_search.best_params_)
-# print("Best score:", random_search.best_score_)
+# create a RandomizedSearchCV object to search over the parameter space
+random_search = RandomizedSearchCV(
+    estimator=gbc,
+    param_distributions=param_dist,
+    n_iter=100,
+    cv=5,
+    random_state=42,
+    n_jobs=-1,
+    scoring='accuracy')
 
-# # asssigning the best parameters to the gbc model
-# gbc = GradientBoostingClassifier(random_state=42).set_params(**random_search.best_params_)
+# fit the RandomizedSearchCV object to the training data
+random_search.fit(X_train, y_train)
 
-#  ## dump gbc 
-# joblib.dump(gbc, 'model_gbc.pkl')
+# print the best hyperparameters and best score
+print("Best hyperparameters:", random_search.best_params_)
+print("Best score:", random_search.best_score_)
+
+# asssigning the best parameters to the gbc model
+gbc = GradientBoostingClassifier(random_state=42).set_params(**random_search.best_params_)
+
+ ## dump gbc 
+joblib.dump(gbc, 'model_gbc.pkl')
  
-# # Q5(c)
+# Q5(c)
 
-# # Step 3. Add ensembling methods on top of Base model
-# ensemble_model = BaggingClassifier(estimator=GradientBoostingClassifier(), n_estimators=5, random_state=42)
-# ## it can't process this on my PC and change the n_estimators with more parameters
+# Step 3. Add ensembling methods on top of Base model
+ensemble_model = BaggingClassifier(estimator=GradientBoostingClassifier(), n_estimators=5, random_state=42)
+## it can't process this on my PC and change the n_estimators with more parameters
 
-# # Step 4. Fit the ensemble model to the training data
-# ensemble_model.fit(X_train, y_train)
+# Step 4. Fit the ensemble model to the training data
+ensemble_model.fit(X_train, y_train)
 
-# # Step 5. Evaluate the performance of the ensemble model on the test data
-# accuracy = ensemble_model.score(X_test, y_test)
-# print("Accuracy for Bagging:", accuracy)
-
-
-
-# ############################# QUESTION 6 ################################
-
-
-# # create a GradientBoostingRegressor object with the same hyperparameters as the GradientBoostingClassifier
-# gbr = GradientBoostingRegressor(
-#     loss='squared_error',
-#     learning_rate=gbc.learning_rate,
-#     n_estimators=gbc.n_estimators,
-#     subsample=gbc.subsample,
-#     criterion=gbc.criterion,
-#     min_samples_split=gbc.min_samples_split,
-#     min_samples_leaf=gbc.min_samples_leaf,
-#     max_depth=gbc.max_depth,
-#     random_state=42
-# )
-
-# # fit the GradientBoostingRegressor to the training data
-# gbr.fit(X_train, y_train)
-
-# joblib.dump(gbr,'gbr.pkl')
+# Step 5. Evaluate the performance of the ensemble model on the test data
+accuracy = ensemble_model.score(X_test, y_test)
+print("Accuracy for Bagging:", accuracy)
 
 
 
-# # create a TreeExplainer for the GradientBoostingRegressor
-# shap_explainer = shap.TreeExplainer(gbr)
-
-# # generate SHAP values for the GradientBoostingClassifier
-# shap_values = shap_explainer.shap_values(X_test)
-
-# # create a SHAP summary plot
-# shap.summary_plot(shap_values, X_test,plot_type='dot')
+############################# QUESTION 6 ################################
 
 
-# # save the plot as an image
-# #plt.savefig('shap_summary_plot.png')
+# create a GradientBoostingRegressor object with the same hyperparameters as the GradientBoostingClassifier
+gbr = GradientBoostingRegressor(
+    loss='squared_error',
+    learning_rate=gbc.learning_rate,
+    n_estimators=gbc.n_estimators,
+    subsample=gbc.subsample,
+    criterion=gbc.criterion,
+    min_samples_split=gbc.min_samples_split,
+    min_samples_leaf=gbc.min_samples_leaf,
+    max_depth=gbc.max_depth,
+    random_state=42
+)
+
+# fit the GradientBoostingRegressor to the training data
+gbr.fit(X_train, y_train)
+
+joblib.dump(gbr,'gbr.pkl')
 
 
-# #2. FEATURE IMPORTANCE PLOT
-# # Creating the feature importances plot
-# visualizer = FeatureImportances(gbc,relative=True)
 
-# visualizer.fit(X_train, y_train)
+# create a TreeExplainer for the GradientBoostingRegressor
+shap_explainer = shap.TreeExplainer(gbr)
 
-# joblib.dump(visualizer,'visualizer.pkl')
-# # Saving plot in PNG format
-# visualizer.show(outpath="Feature_Importances_Plot.png")
+# generate SHAP values for the GradientBoostingClassifier
+shap_values = shap_explainer.shap_values(X_test)
+
+# create a SHAP summary plot
+shap.summary_plot(shap_values, X_test,plot_type='dot')
 
 
-# gbc.fit(X_train,y_train)
-# y_gbc_proba = gbc.predict_proba(X_test)
-# y_gbc_pred = np.where(y_gbc_proba[:,1] > 0.5, 1, 0)
-# skplt.metrics.plot_precision_recall(y_test, y_gbc_proba, title = 'PR Curve for GBC',figsize=(12,8))
-# plt.legend(loc='lower right')
-# plt.show()
+# save the plot as an image
+#plt.savefig('shap_summary_plot.png')
+
+
+#2. FEATURE IMPORTANCE PLOT
+# Creating the feature importances plot
+visualizer = FeatureImportances(gbc,relative=True)
+
+visualizer.fit(X_train, y_train)
+
+joblib.dump(visualizer,'visualizer.pkl')
+# Saving plot in PNG format
+visualizer.show(outpath="Feature_Importances_Plot.png")
+
+
+gbc.fit(X_train,y_train)
+y_gbc_proba = gbc.predict_proba(X_test)
+y_gbc_pred = np.where(y_gbc_proba[:,1] > 0.5, 1, 0)
+skplt.metrics.plot_precision_recall(y_test, y_gbc_proba, title = 'PR Curve for GBC',figsize=(12,8))
+plt.legend(loc='lower right')
+plt.show()
 
 
 
