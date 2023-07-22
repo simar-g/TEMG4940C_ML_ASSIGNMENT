@@ -133,9 +133,6 @@ plt.tight_layout()
 plt.show() 
 
 #2ND PLOT
-    
-
-
 # Group the data by 'Kidhome' and calculate the mean amount spent on each product
 grouped_data = data.groupby('Kidhome')[['MntWines', 'MntFruits', 'MntMeatProducts', 'MntFishProducts', 'MntSweetProducts', 'MntGoldProds']].mean()
 
@@ -555,13 +552,6 @@ pdp_display.plot()
 
 
 
-
-
-
-
-
-
-############################# QUESTION 6 ################################
 
 
 
