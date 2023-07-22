@@ -180,7 +180,7 @@ app.layout = html.Div(children=[
     '''),
      html.Img(
         id='SHAP Summary Plot',
-        src='data:image/png;base64,{}'.format(base64.b64encode(open("shap_summary_plot.png", 'rb').read()).decode())
+        src='data:image/png;base64,{}'.format(base64.b64encode(open("Shap.png", 'rb').read()).decode())
     )
     
 ])
