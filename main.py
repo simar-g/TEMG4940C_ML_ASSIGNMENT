@@ -248,7 +248,7 @@ data['DayOfWeek'] = data['Dt_Customer'].dt.dayofweek
 data = data.drop('Dt_Customer', axis=1)
 
 Y = data['AcceptedCmp1'] + data['AcceptedCmp2'] + data['AcceptedCmp3'] + data['AcceptedCmp4'] + data['AcceptedCmp5'] + data['Response']
-    
+
 data= data.drop(columns=['AcceptedCmp1', 'AcceptedCmp2','AcceptedCmp3','AcceptedCmp4','AcceptedCmp5','Response'])
 
 
@@ -335,232 +335,232 @@ joblib.dump(svm, 'model4.pkl')
 
 ############################# QUESTION 4 ################################
 
-# # Create a list of y_pred variables for each model
-# y_pred_list = [y_pred_log, y_pred_rf, y_pred_gb, y_pred_SVM]
-# models=[logreg,rfc,gbc,svm]
-# model_names=['Logistic Regression','Random Forests','Gradient Boosting','SVM',]
-# # define positive classes
-# positive_classes = [1, 2, 3, 4, 5, 6]
-# i=0
+# Create a list of y_pred variables for each model
+y_pred_list = [y_pred_log, y_pred_rf, y_pred_gb, y_pred_SVM]
+models=[logreg,rfc,gbc,svm]
+model_names=['Logistic Regression','Random Forests','Gradient Boosting','SVM',]
+# define positive classes
+positive_classes = [1, 2, 3, 4, 5, 6]
+i=0
 
-# for i in range(len(y_pred_list)):
-#     print("Model:"+ model_names[i]+"\n")
-#     # Accuracy score
-#     print("Accuracy :", accuracy_score(y_test, y_pred_list[i])) 
+for i in range(len(y_pred_list)):
+    print("Model:"+ model_names[i]+"\n")
+    # Accuracy score
+    print("Accuracy :", accuracy_score(y_test, y_pred_list[i])) 
 
-#     # Precision score
-#     print("Precision:", precision_score(y_test,y_pred_list[i],average="weighted",zero_division=1))
+    # Precision score
+    print("Precision:", precision_score(y_test,y_pred_list[i],average="weighted",zero_division=1))
 
-#     #Recall score
-#     print('Recall:', recall_score(y_test,y_pred_list[i],average="weighted"))
+    #Recall score
+    print('Recall:', recall_score(y_test,y_pred_list[i],average="weighted"))
 
-#     #F1 Score
-#     print('F1 score:', f1_score(y_test, y_pred_list[i],average="weighted"))
+    #F1 Score
+    print('F1 score:', f1_score(y_test, y_pred_list[i],average="weighted"))
     
-#     # AUC score
-#     if hasattr(models[i], 'predict_proba'):
-#         proba = models[i].predict_proba(X_test)
-#     else:
-#         svm = models[i]
-#         svm_calibrated = CalibratedClassifierCV(svm, cv='prefit')
-#         svm_calibrated.fit(X_test, y_test)
-#         proba = svm_calibrated.predict_proba(X_test)
-#     auc_score = roc_auc_score(y_test, proba, multi_class='ovr', average='weighted')
-#     print("AUC score:", auc_score)
+    # AUC score
+    if hasattr(models[i], 'predict_proba'):
+        proba = models[i].predict_proba(X_test)
+    else:
+        svm = models[i]
+        svm_calibrated = CalibratedClassifierCV(svm, cv='prefit')
+        svm_calibrated.fit(X_test, y_test)
+        proba = svm_calibrated.predict_proba(X_test)
+    auc_score = roc_auc_score(y_test, proba, multi_class='ovr', average='weighted')
+    print("AUC score:", auc_score)
     
     
     
-#     # get all unique classes
-#     classes = np.unique(np.concatenate((y_test, y_pred_list[i])))
+    # get all unique classes
+    classes = np.unique(np.concatenate((y_test, y_pred_list[i])))
 
-#     # generate confusion matrix
-#     confusion_matrix = metrics.confusion_matrix(y_test, y_pred_list[i], labels=classes)
+    # generate confusion matrix
+    confusion_matrix = metrics.confusion_matrix(y_test, y_pred_list[i], labels=classes)
     
-#     # create a new figure and axis object
-#     fig, ax = plt.subplots()
+    # create a new figure and axis object
+    fig, ax = plt.subplots()
 
-#     # display confusion matrix
-#     cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix=confusion_matrix, display_labels=classes)
-#     cm_display.plot(include_values=True, cmap='Blues', ax=ax, xticks_rotation='horizontal')
-#     plt.show()    
+    # display confusion matrix
+    cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix=confusion_matrix, display_labels=classes)
+    cm_display.plot(include_values=True, cmap='Blues', ax=ax, xticks_rotation='horizontal')
+    plt.show()    
     
-#     #update i
-#     i=i+1
-#     print("\n")
+    #update i
+    i=i+1
+    print("\n")
     
 
-# #ROC CURVE 
-# # initialize plot
-# plt.figure()
+#ROC CURVE 
+# initialize plot
+plt.figure()
 
-# # plot ROC curve for each model
-# for i in range(len(models)):
-#     # generate predicted probabilities or decision function scores depending on the model
-#     if i < 3:
-#         y_prob = models[i].predict_proba(X_test)
-#     else:
-#         y_score = models[i].decision_function(X_test)
-#         y_prob = 1 / (1 + np.exp(-y_score))
+# plot ROC curve for each model
+for i in range(len(models)):
+    # generate predicted probabilities or decision function scores depending on the model
+    if i < 3:
+        y_prob = models[i].predict_proba(X_test)
+    else:
+        y_score = models[i].decision_function(X_test)
+        y_prob = 1 / (1 + np.exp(-y_score))
 
-#     # combine positive classes into one class
-#     y_true = np.zeros_like(y_test)
-#     positive_classes = [3, 5]
-#     for cls in positive_classes:
-#         y_true += (y_test == cls)
-#     y_true = (y_true > 0).astype(int)
-#     y_score = y_prob[:, positive_classes].max(axis=1)
+    # combine positive classes into one class
+    y_true = np.zeros_like(y_test)
+    positive_classes = [3, 5]
+    for cls in positive_classes:
+        y_true += (y_test == cls)
+    y_true = (y_true > 0).astype(int)
+    y_score = y_prob[:, positive_classes].max(axis=1)
 
-#     # compute micro-averaged ROC curve
-#     fpr, tpr, _ = roc_curve(y_true, y_score)
-#     roc_auc = roc_auc_score(y_true, y_score)
+    # compute micro-averaged ROC curve
+    fpr, tpr, _ = roc_curve(y_true, y_score)
+    roc_auc = roc_auc_score(y_true, y_score)
 
-#     # plot ROC curve
-#     plt.plot(fpr, tpr, label='%s (AUC = %0.2f)' % (model_names[i], roc_auc))
+    # plot ROC curve
+    plt.plot(fpr, tpr, label='%s (AUC = %0.2f)' % (model_names[i], roc_auc))
 
-# # finalize plot
-# plt.plot([0, 1], [0, 1], 'k--', label='Random Guess')
-# plt.xlim([0.0, 1.0])
-# plt.ylim([0.0, 1.0])
-# plt.xlabel('False Positive Rate')
-# plt.ylabel('True Positive Rate')
-# plt.title('Receiver Operating Characteristic (ROC) Curves')
-# plt.legend(loc='lower right')
-# plt.show()
-
-
-
-
-
-# ############################# QUESTION 5 ################################
-
-#Q5(a)
-# create a Gradient Boosting classifier 
-gbc_hyper = GradientBoostingClassifier(n_estimators=50,
-                                 learning_rate=0.1,
-                                 max_depth=3,
-                                 subsample=1.0,
-                                 min_samples_split=2,
-                                 min_samples_leaf=1,
-                                 random_state=42)
-
-# train the classifier on the training data
-gbc_hyper.fit(X_train, y_train)
-
-# make predictions on the testing data
-y_pred_gb = gbc_hyper.predict(X_test)
-
-# Accuracy score
-print("Accuracy  after tuning the hyperparameters:", accuracy_score(y_test, y_pred_gb))
-
-
-# #Q5(b)
-
-
-# define the hyperparameter space
-param_dist = {
-    'n_estimators': sp_randint(200, 300),
-    'learning_rate': sp_uniform(0.001, 0.01),
-    'max_depth': sp_randint(3, 4),
-    'subsample': sp_uniform(0.5, 0.75),
-    'min_samples_split': sp_randint(2, 3),
-    'min_samples_leaf': sp_randint(1, 2)
-}
-
-# create a Gradient Boosting classifier
-gbc = GradientBoostingClassifier(random_state=42)
-
-# create a RandomizedSearchCV object to search over the parameter space
-random_search = RandomizedSearchCV(
-    estimator=gbc,
-    param_distributions=param_dist,
-    n_iter=100,
-    cv=5,
-    random_state=42,
-    n_jobs=-1,
-    scoring='accuracy')
-
-# fit the RandomizedSearchCV object to the training data
-random_search.fit(X_train, y_train)
-
-# print the best hyperparameters and best score
-print("Best hyperparameters:", random_search.best_params_)
-print("Best score:", random_search.best_score_)
-
-# asssigning the best parameters to the gbc model
-gbc = GradientBoostingClassifier(random_state=42).set_params(**random_search.best_params_)
-
- ## dump gbc 
-joblib.dump(gbc, 'model_gbc.pkl')
- 
-# Q5(c)
-
-# Step 3. Add ensembling methods on top of Base model
-ensemble_model = BaggingClassifier(estimator=GradientBoostingClassifier(), n_estimators=5, random_state=42)
-## it can't process this on my PC and change the n_estimators with more parameters
-
-# Step 4. Fit the ensemble model to the training data
-ensemble_model.fit(X_train, y_train)
-
-# Step 5. Evaluate the performance of the ensemble model on the test data
-accuracy = ensemble_model.score(X_test, y_test)
-print("Accuracy for Bagging:", accuracy)
-
-
-
-############################# QUESTION 6 ################################
-
-
-# create a GradientBoostingRegressor object with the same hyperparameters as the GradientBoostingClassifier
-gbr = GradientBoostingRegressor(
-    loss='squared_error',
-    learning_rate=gbc.learning_rate,
-    n_estimators=gbc.n_estimators,
-    subsample=gbc.subsample,
-    criterion=gbc.criterion,
-    min_samples_split=gbc.min_samples_split,
-    min_samples_leaf=gbc.min_samples_leaf,
-    max_depth=gbc.max_depth,
-    random_state=42
-)
-
-# fit the GradientBoostingRegressor to the training data
-gbr.fit(X_train, y_train)
-
-joblib.dump(gbr,'gbr.pkl')
-
-
-
-# create a TreeExplainer for the GradientBoostingRegressor
-shap_explainer = shap.TreeExplainer(gbr)
-
-# generate SHAP values for the GradientBoostingClassifier
-shap_values = shap_explainer.shap_values(X_test)
-
-# create a SHAP summary plot
-shap.summary_plot(shap_values, X_test,plot_type='dot')
-
-
-# save the plot as an image
-#plt.savefig('shap_summary_plot.png')
-
-
-#2. FEATURE IMPORTANCE PLOT
-# Creating the feature importances plot
-visualizer = FeatureImportances(gbc,relative=True)
-
-visualizer.fit(X_train, y_train)
-
-joblib.dump(visualizer,'visualizer.pkl')
-# Saving plot in PNG format
-visualizer.show(outpath="Feature_Importances_Plot.png")
-
-
-gbc.fit(X_train,y_train)
-y_gbc_proba = gbc.predict_proba(X_test)
-y_gbc_pred = np.where(y_gbc_proba[:,1] > 0.5, 1, 0)
-skplt.metrics.plot_precision_recall(y_test, y_gbc_proba, title = 'PR Curve for GBC',figsize=(12,8))
+# finalize plot
+plt.plot([0, 1], [0, 1], 'k--', label='Random Guess')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.0])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic (ROC) Curves')
 plt.legend(loc='lower right')
 plt.show()
+
+
+
+
+
+# # ############################# QUESTION 5 ################################
+
+# #Q5(a)
+# # create a Gradient Boosting classifier 
+# gbc_hyper = GradientBoostingClassifier(n_estimators=50,
+#                                  learning_rate=0.1,
+#                                  max_depth=3,
+#                                  subsample=1.0,
+#                                  min_samples_split=2,
+#                                  min_samples_leaf=1,
+#                                  random_state=42)
+
+# # train the classifier on the training data
+# gbc_hyper.fit(X_train, y_train)
+
+# # make predictions on the testing data
+# y_pred_gb = gbc_hyper.predict(X_test)
+
+# # Accuracy score
+# print("Accuracy  after tuning the hyperparameters:", accuracy_score(y_test, y_pred_gb))
+
+
+# # #Q5(b)
+
+
+# # define the hyperparameter space
+# param_dist = {
+#     'n_estimators': sp_randint(200, 300),
+#     'learning_rate': sp_uniform(0.001, 0.01),
+#     'max_depth': sp_randint(3, 4),
+#     'subsample': sp_uniform(0.5, 0.75),
+#     'min_samples_split': sp_randint(2, 3),
+#     'min_samples_leaf': sp_randint(1, 2)
+# }
+
+# # create a Gradient Boosting classifier
+# gbc = GradientBoostingClassifier(random_state=42)
+
+# # create a RandomizedSearchCV object to search over the parameter space
+# random_search = RandomizedSearchCV(
+#     estimator=gbc,
+#     param_distributions=param_dist,
+#     n_iter=100,
+#     cv=5,
+#     random_state=42,
+#     n_jobs=-1,
+#     scoring='accuracy')
+
+# # fit the RandomizedSearchCV object to the training data
+# random_search.fit(X_train, y_train)
+
+# # print the best hyperparameters and best score
+# print("Best hyperparameters:", random_search.best_params_)
+# print("Best score:", random_search.best_score_)
+
+# # asssigning the best parameters to the gbc model
+# gbc = GradientBoostingClassifier(random_state=42).set_params(**random_search.best_params_)
+
+#  ## dump gbc 
+# joblib.dump(gbc, 'model_gbc.pkl')
+ 
+# # Q5(c)
+
+# # Step 3. Add ensembling methods on top of Base model
+# ensemble_model = BaggingClassifier(estimator=GradientBoostingClassifier(), n_estimators=5, random_state=42)
+# ## it can't process this on my PC and change the n_estimators with more parameters
+
+# # Step 4. Fit the ensemble model to the training data
+# ensemble_model.fit(X_train, y_train)
+
+# # Step 5. Evaluate the performance of the ensemble model on the test data
+# accuracy = ensemble_model.score(X_test, y_test)
+# print("Accuracy for Bagging:", accuracy)
+
+
+
+# ############################# QUESTION 6 ################################
+
+
+# # create a GradientBoostingRegressor object with the same hyperparameters as the GradientBoostingClassifier
+# gbr = GradientBoostingRegressor(
+#     loss='squared_error',
+#     learning_rate=gbc.learning_rate,
+#     n_estimators=gbc.n_estimators,
+#     subsample=gbc.subsample,
+#     criterion=gbc.criterion,
+#     min_samples_split=gbc.min_samples_split,
+#     min_samples_leaf=gbc.min_samples_leaf,
+#     max_depth=gbc.max_depth,
+#     random_state=42
+# )
+
+# # fit the GradientBoostingRegressor to the training data
+# gbr.fit(X_train, y_train)
+
+# joblib.dump(gbr,'gbr.pkl')
+
+
+
+# # create a TreeExplainer for the GradientBoostingRegressor
+# shap_explainer = shap.TreeExplainer(gbr)
+
+# # generate SHAP values for the GradientBoostingClassifier
+# shap_values = shap_explainer.shap_values(X_test)
+
+# # create a SHAP summary plot
+# shap.summary_plot(shap_values, X_test,plot_type='dot')
+
+
+# # save the plot as an image
+# #plt.savefig('shap_summary_plot.png')
+
+
+# #2. FEATURE IMPORTANCE PLOT
+# # Creating the feature importances plot
+# visualizer = FeatureImportances(gbc,relative=True)
+
+# visualizer.fit(X_train, y_train)
+
+# joblib.dump(visualizer,'visualizer.pkl')
+# # Saving plot in PNG format
+# visualizer.show(outpath="Feature_Importances_Plot.png")
+
+
+# gbc.fit(X_train,y_train)
+# y_gbc_proba = gbc.predict_proba(X_test)
+# y_gbc_pred = np.where(y_gbc_proba[:,1] > 0.5, 1, 0)
+# skplt.metrics.plot_precision_recall(y_test, y_gbc_proba, title = 'PR Curve for GBC',figsize=(12,8))
+# plt.legend(loc='lower right')
+# plt.show()
 
 
 

@@ -200,7 +200,7 @@ app.layout = html.Div(children=[
     
     html.Img(
         id='feature-importances-img',
-        src='data:image/png;base64,{}'.format(base64.b64encode(open("Feature_Importances_Plot.png", 'rb').read()).decode())
+        src='data:image/png;base64,{}'.format(base64.b64encode(open("FEATURE_IMPORTANCE.png", 'rb').read()).decode())
      ),
     
       html.Div(children='''
@@ -208,23 +208,15 @@ app.layout = html.Div(children=[
     '''),
      html.Img(
         id='SHAP Summary Plot',
-        src='data:image/png;base64,{}'.format(base64.b64encode(open("Shap.png", 'rb').read()).decode())
+        src='data:image/png;base64,{}'.format(base64.b64encode(open("SHAP_PLOT.png", 'rb').read()).decode())
     ),
      
        html.Div(children='''
-        Residual Plot
+        Precision-Recall Curve for Gradient Boosting Classifier:
     '''),
      html.Img(
         id='Residual Plot',
-        src='data:image/png;base64,{}'.format(base64.b64encode(open("Shap.png", 'rb').read()).decode())
-    ),
-     
-     html.Div(children='''
-        Precision-Recall Curve for Gradient Boosting Classifier:
-    '''),
-
-    dcc.Graph(
-        id='precision-recall-graph'
+        src='data:image/png;base64,{}'.format(base64.b64encode(open("PR_CURVE.png", 'rb').read()).decode())
     )
     
 ])
