@@ -31,6 +31,7 @@ from sklearn.ensemble import GradientBoostingRegressor
 from yellowbrick.model_selection import FeatureImportances
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.inspection import PartialDependenceDisplay
+import joblib
 
 # Specify the file path
 file_path = "Dataset.csv"
@@ -280,6 +281,9 @@ logreg.fit(X_train, y_train)
 # generate predicted output values for the testing data
 y_pred_log = logreg.predict(X_test)
 
+# Save the trained model to disk
+joblib.dump(logreg, 'model1.pkl')
+
 
 
 # 2.  RANDOM FORESTS
@@ -293,6 +297,9 @@ rfc.fit(X_train, y_train)
 # make predictions on the testing data
 y_pred_rf = rfc.predict(X_test)
 
+# Save the trained model to disk
+joblib.dump(rfc, 'model2.pkl')
+
 
 #3. Gradient boosting
 
@@ -304,6 +311,9 @@ gbc.fit(X_train, y_train)
 
 # make predictions on the testing data
 y_pred_gb = gbc.predict(X_test)
+
+# Save the trained model to disk
+joblib.dump(gbc, 'model3.pkl')
 
 #4. SVM 
 
@@ -317,118 +327,103 @@ svm.fit(X_train, y_train)
 # make predictions on the testing data
 y_pred_SVM = svm.predict(X_test)
 
+# Save the trained model to disk
+joblib.dump(svm, 'model4.pkl')
+
 
 
 
 ############################# QUESTION 4 ################################
 
-# # Create a list of y_pred variables for each model
-# y_pred_list = [y_pred_log, y_pred_rf, y_pred_gb, y_pred_SVM]
-# models=[logreg,rfc,gbc,svm]
-# model_names=['Logistic Regression','Random Forests','Gradient Boosting','SVM',]
-# # define positive classes
-# positive_classes = [1, 2, 3, 4, 5, 6]
-# i=0
+# Create a list of y_pred variables for each model
+y_pred_list = [y_pred_log, y_pred_rf, y_pred_gb, y_pred_SVM]
+models=[logreg,rfc,gbc,svm]
+model_names=['Logistic Regression','Random Forests','Gradient Boosting','SVM',]
+# define positive classes
+positive_classes = [1, 2, 3, 4, 5, 6]
+i=0
 
-# for i in range(len(y_pred_list)):
-#     print("Model:"+ model_names[i]+"\n")
-#     # Accuracy score
-#     print("Accuracy :", accuracy_score(y_test, y_pred_list[i])) 
+for i in range(len(y_pred_list)):
+    print("Model:"+ model_names[i]+"\n")
+    # Accuracy score
+    print("Accuracy :", accuracy_score(y_test, y_pred_list[i])) 
 
-#     # Precision score
-#     print("Precision:", precision_score(y_test,y_pred_list[i],average="weighted",zero_division=1))
+    # Precision score
+    print("Precision:", precision_score(y_test,y_pred_list[i],average="weighted",zero_division=1))
 
-#     #Recall score
-#     print('Recall:', recall_score(y_test,y_pred_list[i],average="weighted"))
+    #Recall score
+    print('Recall:', recall_score(y_test,y_pred_list[i],average="weighted"))
 
-#     #F1 Score
-#     print('F1 score:', f1_score(y_test, y_pred_list[i],average="weighted"))
+    #F1 Score
+    print('F1 score:', f1_score(y_test, y_pred_list[i],average="weighted"))
     
-#     # #AUC Score 
-#     # # generate predicted probabilities or decision function scores depending on the model
-#     # if i < 3:
-#     #     y_prob = models[i].predict_proba(X_test)
-#     # else:
-#     #     y_score = models[i].decision_function(X_test)
-#     #     y_prob = 1 / (1 + np.exp(-y_score))
-
-#     # # select the positive class probabilities
-#     # y_scores = y_prob[:, 1]
-
-#     # # compute the AUC score
-#     # auc_score = roc_auc_score(y_test, y_scores)
-
-#     # print('AUC score: %0.4f' % auc_score)
-
-#     # # Calculate AUC score
-#     # if len(np.unique(y_test)) == 2:
-#     #     # Binary classification
-#     #     auc = roc_auc_score(y_test, y_pred_list[i])
-#     # else:
-#     #     # Multi-class classification
-#     #     y_pred_prob = y_pred_list[i].reshape(-1, 1) if y_pred_list[i].ndim == 1 else y_pred_list[i]
-#     #     auc = roc_auc_score(y_test, y_pred_prob, multi_class='ovo')
-#     # print('AUC score',(auc))
+    # #AUC Score 
     
-#     # get all unique classes
-#     classes = np.unique(np.concatenate((y_test, y_pred_list[i])))
-
-#     # generate confusion matrix
-#     confusion_matrix = metrics.confusion_matrix(y_test, y_pred_list[i], labels=classes)
     
-#     # create a new figure and axis object
-#     fig, ax = plt.subplots()
-
-#     # display confusion matrix
-#     cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix=confusion_matrix, display_labels=classes)
-#     cm_display.plot(include_values=True, cmap='Blues', ax=ax, xticks_rotation='horizontal')
-#     plt.show()    
     
-#     #update i
-#     i=i+1
-#     print("\n")
+    # get all unique classes
+    classes = np.unique(np.concatenate((y_test, y_pred_list[i])))
+
+    # generate confusion matrix
+    confusion_matrix = metrics.confusion_matrix(y_test, y_pred_list[i], labels=classes)
+    
+    # create a new figure and axis object
+    fig, ax = plt.subplots()
+
+    # display confusion matrix
+    cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix=confusion_matrix, display_labels=classes)
+    cm_display.plot(include_values=True, cmap='Blues', ax=ax, xticks_rotation='horizontal')
+    plt.show()    
+    
+    #update i
+    i=i+1
+    print("\n")
     
 
-# #ROC CURVE 
-# # initialize plot
-# plt.figure()
+#ROC CURVE 
+# initialize plot
+plt.figure()
 
-# # plot ROC curve for each model
-# for i in range(len(models)):
-#     # generate predicted probabilities or decision function scores depending on the model
-#     if i < 3:
-#         y_prob = models[i].predict_proba(X_test)
-#     else:
-#         y_score = models[i].decision_function(X_test)
-#         y_prob = 1 / (1 + np.exp(-y_score))
+# plot ROC curve for each model
+for i in range(len(models)):
+    # generate predicted probabilities or decision function scores depending on the model
+    if i < 3:
+        y_prob = models[i].predict_proba(X_test)
+    else:
+        y_score = models[i].decision_function(X_test)
+        y_prob = 1 / (1 + np.exp(-y_score))
 
-#     # combine positive classes into one class
-#     y_true = np.zeros_like(y_test)
-#     positive_classes = [3, 5]
-#     for cls in positive_classes:
-#         y_true += (y_test == cls)
-#     y_true = (y_true > 0).astype(int)
-#     y_score = y_prob[:, positive_classes].max(axis=1)
+    # combine positive classes into one class
+    y_true = np.zeros_like(y_test)
+    positive_classes = [3, 5]
+    for cls in positive_classes:
+        y_true += (y_test == cls)
+    y_true = (y_true > 0).astype(int)
+    y_score = y_prob[:, positive_classes].max(axis=1)
 
-#     # compute micro-averaged ROC curve
-#     fpr, tpr, _ = roc_curve(y_true, y_score)
-#     roc_auc = roc_auc_score(y_true, y_score)
+    # compute micro-averaged ROC curve
+    fpr, tpr, _ = roc_curve(y_true, y_score)
+    roc_auc = roc_auc_score(y_true, y_score)
 
-#     # plot ROC curve
-#     plt.plot(fpr, tpr, label='%s (AUC = %0.2f)' % (model_names[i], roc_auc))
+    # plot ROC curve
+    plt.plot(fpr, tpr, label='%s (AUC = %0.2f)' % (model_names[i], roc_auc))
 
-# # finalize plot
-# plt.plot([0, 1], [0, 1], 'k--', label='Random Guess')
-# plt.xlim([0.0, 1.0])
-# plt.ylim([0.0, 1.0])
-# plt.xlabel('False Positive Rate')
-# plt.ylabel('True Positive Rate')
-# plt.title('Receiver Operating Characteristic (ROC) Curves')
-# plt.legend(loc='lower right')
-# plt.show()
+# finalize plot
+plt.plot([0, 1], [0, 1], 'k--', label='Random Guess')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.0])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic (ROC) Curves')
+plt.legend(loc='lower right')
+plt.show()
+
+# save the plot as an image
+plt.savefig('ROC.png')
 
 
-# ############################# QUESTION 5-1 ################################
+
+# ############################# QUESTION 5 ################################
 
 #Q5(a)
 # create a Gradient Boosting classifier 
@@ -505,48 +500,65 @@ print("Accuracy for Bagging:", accuracy)
 ############################# QUESTION 6 ################################
 
 
-# # create a GradientBoostingRegressor object with the same hyperparameters as the GradientBoostingClassifier
-# gbr = GradientBoostingRegressor(
-#     loss='squared_error',
-#     learning_rate=gbc.learning_rate,
-#     n_estimators=gbc.n_estimators,
-#     subsample=gbc.subsample,
-#     criterion=gbc.criterion,
-#     min_samples_split=gbc.min_samples_split,
-#     min_samples_leaf=gbc.min_samples_leaf,
-#     max_depth=gbc.max_depth,
-#     random_state=42
-# )
+# create a GradientBoostingRegressor object with the same hyperparameters as the GradientBoostingClassifier
+gbr = GradientBoostingRegressor(
+    loss='squared_error',
+    learning_rate=gbc.learning_rate,
+    n_estimators=gbc.n_estimators,
+    subsample=gbc.subsample,
+    criterion=gbc.criterion,
+    min_samples_split=gbc.min_samples_split,
+    min_samples_leaf=gbc.min_samples_leaf,
+    max_depth=gbc.max_depth,
+    random_state=42
+)
 
-# # fit the GradientBoostingRegressor to the training data
-# gbr.fit(X_train, y_train)
+# fit the GradientBoostingRegressor to the training data
+gbr.fit(X_train, y_train)
 
-# # create a TreeExplainer for the GradientBoostingRegressor
-# shap_explainer = shap.TreeExplainer(gbr)
-
-# # generate SHAP values for the GradientBoostingClassifier
-# shap_values = shap_explainer.shap_values(X_test)
-
-# # create a SHAP summary plot
-# shap.summary_plot(shap_values, X_test,plot_type='dot')
+joblib.dump(gbr,'gbr.pkl')
 
 
-# # Creating the feature importances plot
-# visualizer = FeatureImportances(gbc,relative=True)
 
-# visualizer.fit(X_train, y_train)
-# # Saving plot in PNG format
-# visualizer.show(outpath="Feature_Importances_Plot.png")
+# create a TreeExplainer for the GradientBoostingRegressor
+shap_explainer = shap.TreeExplainer(gbr)
+
+# generate SHAP values for the GradientBoostingClassifier
+shap_values = shap_explainer.shap_values(X_test)
+
+# create a SHAP summary plot
+shap.summary_plot(shap_values, X_test,plot_type='dot')
 
 
-# define the features to include in the partial dependence plot
-features = ['Income', 'Marital_Status', ('Income', 'Marital_Status')]
+# save the plot as an image
+plt.savefig('shap_summary_plot.png')
 
-# create a PartialDependenceDisplay object for the gbc model
-pdp_display = PartialDependenceDisplay.from_estimator(gbc, X_train, features,target=y_train)
 
-# show the plot
-pdp_display.plot()
+
+
+# Creating the feature importances plot
+visualizer = FeatureImportances(gbc,relative=True)
+
+visualizer.fit(X_train, y_train)
+
+joblib.dump(visualizer,'visualizer.pkl')
+# Saving plot in PNG format
+visualizer.show(outpath="Feature_Importances_Plot.png")
+
+
+# # define the features to include in the partial dependence plot
+# features = ['Income', 'Marital_Status', ('Income', 'Marital_Status')]
+
+# # create a PartialDependenceDisplay object for the gbc model
+# pdp_display = PartialDependenceDisplay.from_estimator(gbc, X_train, features,target=y_train)
+
+# # show the plot
+# pdp_display.plot()
+
+
+
+
+
 
 
 
